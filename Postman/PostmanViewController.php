@@ -617,7 +617,8 @@ if ( ! class_exists( 'PostmanViewController' ) ) {
 		 */
 		private function printDeliveryDetails() {
 			$currentTransport = PostmanTransportRegistry::getInstance()->getActiveTransport();
-			$deliveryDetails = $currentTransport->getDeliveryDetails( $this->options );
+			$deliveryDetails = $currentTransport->getDeliveryDetails( $this->options ) ? $currentTransport->getDeliveryDetails( $this->options ) : '';
+			
 			printf( 
 				'<p><span>%s</span></p>',
 				wp_kses_post( $deliveryDetails )  
