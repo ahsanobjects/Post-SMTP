@@ -1620,3 +1620,7 @@ div#ps-email-log_length{
 .ps-status-btn:focus {
     box-shadow: none!important;
 }
+
+.fallback_migration_form{
+    display: inline;
+}
