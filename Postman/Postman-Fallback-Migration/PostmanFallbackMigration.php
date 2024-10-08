@@ -8,6 +8,7 @@ class PostmanFallbackMigration {
     private $have_old_logs = false;
     private $logging_file = '';
     private $logging_file_url = '';
+    private $existing_db_version = '';
 
     /**
      *  Constructor PostmanFallbackMigration
@@ -40,13 +41,6 @@ class PostmanFallbackMigration {
             ( $this->existing_db_version != POST_SMTP_DB_VERSION  || $deleted_email_settings !== false )
         ) {
             add_action( 'admin_notices', array( $this, 'notice' ) );
-        }
-
-        //Revert Migration
-        if( isset( $_GET['action'] ) && $_GET['action'] == 'ps-revert-migration' ) {
-
-            $this->revert_migration();
-
         }
 
         add_action( 'wp_ajax_ps-db-update-notice-dismiss', array( $this, 'ps_dismiss_fallback_update_notice' ) );
@@ -144,46 +138,6 @@ class PostmanFallbackMigration {
         if( isset( $_POST['action'] ) && $_POST['action'] == 'ps-db-update-notice-dismiss' && wp_verify_nonce( $_POST['security'], 'ps-migrate-logs' ) ) {
 
             set_transient( 'ps_dismiss_update_notice', 1, WEEK_IN_SECONDS );
-
-        }
-
-    }
-
-
-    /**
-     * Revert migration
-     * 
-     * @since 2.5.2
-     * @version 1.0.0
-     */
-    public function revert_migration() {
-
-        if( wp_verify_nonce( $_GET['security'], 'ps-migrate-logs' ) ) {
-
-            $this->log( 'Info: `revert_migration` Reverting Migration' );
-            $email_logs = new PostmanEmailLogs;
-
-            delete_option( 'ps_migrate_fallback' );
-            $this->log( 'Info: `revert_migration` Deleted option ps_migrate_fallback' );
-
-            if( $email_logs->uninstall_tables() ) {
-
-                $this->log( 'Info: `revert_migration` Tables Uninstalled' );
-            
-                global $wpdb;
-                $response = $wpdb->query(
-                    "UPDATE {$wpdb->posts} SET pinged = '' WHERE post_type = 'postman_sent_mail';"                
-                );
-
-                if( $response ) {
-
-                    $this->log( 'Info: `revert_migration` pinged unset' );
-
-                }
-
-            }
-
-            wp_redirect( admin_url( 'admin.php?page=postman_email_log' ) );
 
         }
 
@@ -339,6 +293,8 @@ class PostmanFallbackMigration {
             // Check if any values are non-empty before adding to the api_keys array.
             if ( array_filter( $values ) ) {
                 $api_keys[ $key ] = array_filter( array_combine( $fields, $values ) );
+                $api_keys[ $key ]['provider'] = $key;
+                $api_keys[ $key ]['title'] = $this->format_provider_title( $key );
             }
         }
 
@@ -470,6 +426,23 @@ class PostmanFallbackMigration {
             wp_redirect( admin_url( 'admin.php?page=your_settings_page_slug&settings_restored=1' ) );
             exit;
         }
+    }
+
+    /**
+     * Format provider name to title case, removing underscores and 'api'.
+     *
+     * @param string $key The provider key.
+     * @return string The formatted provider name.
+     *      
+     * @since 3.0.1
+     * @version 1.0.0
+     */
+    private function format_provider_title( $key ) {
+        // Remove 'api' from the key and replace underscores with spaces.
+        $formatted = str_replace( array( 'api', '_' ), '', $key );
+
+        // Convert the formatted string to title case.
+        return ucwords( $formatted );
     }
 
 

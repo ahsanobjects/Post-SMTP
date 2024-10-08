@@ -128,6 +128,7 @@ if ( ! class_exists( 'PostmanOptions' ) ) {
         const FALLBACK_SMTP_USE_AUTH = 'fallback_smtp_use_auth';
         const FALLBACK_SMTP_USERNAME = 'fallback_smtp_username';
         const FALLBACK_SMTP_PASSWORD = 'fallback_smtp_password';
+		const FALLBACK_SELECTED      = 'selected_fallback';
 
 		// defaults
 		const DEFAULT_TRANSCRIPT_SIZE = 128;
@@ -435,6 +436,12 @@ if ( ! class_exists( 'PostmanOptions' ) ) {
         public function getFallbackSecurity() {
             if ( isset( $this->options [ PostmanOptions::FALLBACK_SMTP_SECURITY ] ) ) {
                 return $this->options [ PostmanOptions::FALLBACK_SMTP_SECURITY ];
+            }
+        }
+
+		public function getSelectedFallback() {
+            if ( isset( $this->options [ PostmanOptions::FALLBACK_SELECTED ] ) ) {
+                return $this->options [ PostmanOptions::FALLBACK_SELECTED ];
             }
         }
 

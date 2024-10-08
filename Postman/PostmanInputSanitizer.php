@@ -20,7 +20,6 @@ if ( ! class_exists( 'PostmanInputSanitizer' ) ) {
 		 *        	Contains all settings fields as array keys
 		 */
 		public function sanitize( $input ) {
-			
 		    if ( array_key_exists( 'external_option', $input ) ) {
 		        return $input;
             }
@@ -87,6 +86,7 @@ if ( ! class_exists( 'PostmanInputSanitizer' ) ) {
 			$this->sanitizeString( 'Broken Email Fix', PostmanOptions::INCOMPATIBLE_PHP_VERSION, $input, $new_input );
 			$this->sanitizeInt( 'Transcript Size', PostmanOptions::TRANSCRIPT_SIZE, $input, $new_input );
 			$this->sanitizeString( 'Temporary Directory', PostmanOptions::TEMPORARY_DIRECTORY, $input, $new_input );
+			$this->sanitizeString( 'Selected Fallback', PostmanOptions::FALLBACK_SELECTED, $input, $new_input );
 
             // Fallback
             $this->sanitizeString( 'Use fallback', PostmanOptions::FALLBACK_SMTP_ENABLED, $input, $new_input );

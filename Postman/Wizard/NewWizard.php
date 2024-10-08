@@ -50,6 +50,8 @@ class Post_SMTP_New_Wizard {
 
     private $socket_sequence = array();
 
+    private $existing_db_version = '';
+
     /**
      * Constructor for the class
      * 
@@ -95,6 +97,8 @@ class Post_SMTP_New_Wizard {
         }
 
         $this->options_array = get_option( PostmanOptions::POSTMAN_OPTIONS );
+
+        $this->existing_db_version = get_option( 'postman_db_version' );
         
     }
 
@@ -1611,60 +1615,95 @@ class Post_SMTP_New_Wizard {
             wp_verify_nonce( $form_data['security'], 'post-smtp' )
         ) {
 
-            if( isset( $form_data['postman_options'] ) && !empty( $form_data['postman_options'] ) ) {
+            if( $this->existing_db_version === '1.0.1' ) {
 
-                $sanitized = post_smtp_sanitize_array( $form_data['postman_options'] );
-                $options = get_option( PostmanOptions::POSTMAN_OPTIONS );
-                $_options = $options;
-                $options = $options ? $options : array();
+                if( isset( $form_data['postman_options'] ) && !empty( $form_data['postman_options'] ) ) {
 
-                //for the checkboxes
-                $sanitized['prevent_sender_email_override'] = isset( $sanitized['prevent_sender_email_override'] ) ? 1 : '';
-                $sanitized['prevent_sender_name_override'] = isset( $sanitized['prevent_sender_name_override'] ) ? 1 : '';
-                
-                //Envelop Email Address
-                $sanitized['envelope_sender'] = isset( $sanitized['sender_email'] ) ? $sanitized['sender_email'] : '';
+                    $sanitized = post_smtp_sanitize_array( $form_data['postman_options'] );
+                    $options = get_option( PostmanOptions::POSTMAN_OPTIONS );
+                    $_options = $options;
+                    $options = $options ? $options : array();
 
-                //Encode API Keys
-                $sanitized['office365_app_id'] = isset( $sanitized['office365_app_id'] ) ? $sanitized['office365_app_id'] : '';
-                $sanitized['office365_app_password'] = isset( $sanitized['office365_app_password'] ) ? $sanitized['office365_app_password'] : '';
-                $sanitized[PostmanOptions::SENDINBLUE_API_KEY] = isset( $sanitized[PostmanOptions::SENDINBLUE_API_KEY] ) ? $sanitized[PostmanOptions::SENDINBLUE_API_KEY] : '';
-                $sanitized['sparkpost_api_key'] = isset( $sanitized['sparkpost_api_key'] ) ? $sanitized['sparkpost_api_key'] : '';
-                $sanitized['postmark_api_key'] = isset( $sanitized['postmark_api_key'] ) ? $sanitized['postmark_api_key'] : '';
-                $sanitized['mailgun_api_key'] = isset( $sanitized['mailgun_api_key'] ) ? $sanitized['mailgun_api_key'] : '';
-                $sanitized[PostmanOptions::SENDGRID_API_KEY] = isset( $sanitized[PostmanOptions::SENDGRID_API_KEY] ) ? $sanitized[PostmanOptions::SENDGRID_API_KEY] : '';
-                $sanitized['mandrill_api_key'] = isset( $sanitized['mandrill_api_key'] ) ? $sanitized['mandrill_api_key'] : '';
-                $sanitized['elasticemail_api_key'] = isset( $sanitized['elasticemail_api_key'] ) ? $sanitized['elasticemail_api_key'] : '';
-                $sanitized[PostmanOptions::MAILJET_API_KEY] = isset( $sanitized[PostmanOptions::MAILJET_API_KEY] ) ? $sanitized[PostmanOptions::MAILJET_API_KEY] : '';
-                $sanitized[PostmanOptions::MAILJET_SECRET_KEY] = isset( $sanitized[PostmanOptions::MAILJET_SECRET_KEY] ) ? $sanitized[PostmanOptions::MAILJET_SECRET_KEY] : '';
-                $sanitized['basic_auth_password'] = isset( $sanitized['basic_auth_password'] ) ? $sanitized['basic_auth_password'] : '';
-                $sanitized['ses_access_key_id'] = isset( $sanitized['ses_access_key_id'] ) ? $sanitized['ses_access_key_id'] : '';
-                $sanitized['ses_secret_access_key'] = isset( $sanitized['ses_secret_access_key'] ) ? $sanitized['ses_secret_access_key'] : '';
-                $sanitized['ses_region'] = isset( $sanitized['ses_region'] ) ? $sanitized['ses_region'] : '';
-                $sanitized['enc_type'] = 'tls';
-                $sanitized['auth_type'] = 'login';
-                
-                foreach( $sanitized as $key => $value ) {
+                    //for the checkboxes
+                    $sanitized['prevent_sender_email_override'] = isset( $sanitized['prevent_sender_email_override'] ) ? 1 : '';
+                    $sanitized['prevent_sender_name_override'] = isset( $sanitized['prevent_sender_name_override'] ) ? 1 : '';
+                    
+                    //Envelop Email Address
+                    $sanitized['envelope_sender'] = isset( $sanitized['sender_email'] ) ? $sanitized['sender_email'] : '';
 
-                    $options[$key] = $value;
+                    //Encode API Keys
+                    $sanitized['office365_app_id'] = isset( $sanitized['office365_app_id'] ) ? $sanitized['office365_app_id'] : '';
+                    $sanitized['office365_app_password'] = isset( $sanitized['office365_app_password'] ) ? $sanitized['office365_app_password'] : '';
+                    $sanitized[PostmanOptions::SENDINBLUE_API_KEY] = isset( $sanitized[PostmanOptions::SENDINBLUE_API_KEY] ) ? $sanitized[PostmanOptions::SENDINBLUE_API_KEY] : '';
+                    $sanitized['sparkpost_api_key'] = isset( $sanitized['sparkpost_api_key'] ) ? $sanitized['sparkpost_api_key'] : '';
+                    $sanitized['postmark_api_key'] = isset( $sanitized['postmark_api_key'] ) ? $sanitized['postmark_api_key'] : '';
+                    $sanitized['mailgun_api_key'] = isset( $sanitized['mailgun_api_key'] ) ? $sanitized['mailgun_api_key'] : '';
+                    $sanitized[PostmanOptions::SENDGRID_API_KEY] = isset( $sanitized[PostmanOptions::SENDGRID_API_KEY] ) ? $sanitized[PostmanOptions::SENDGRID_API_KEY] : '';
+                    $sanitized['mandrill_api_key'] = isset( $sanitized['mandrill_api_key'] ) ? $sanitized['mandrill_api_key'] : '';
+                    $sanitized['elasticemail_api_key'] = isset( $sanitized['elasticemail_api_key'] ) ? $sanitized['elasticemail_api_key'] : '';
+                    $sanitized[PostmanOptions::MAILJET_API_KEY] = isset( $sanitized[PostmanOptions::MAILJET_API_KEY] ) ? $sanitized[PostmanOptions::MAILJET_API_KEY] : '';
+                    $sanitized[PostmanOptions::MAILJET_SECRET_KEY] = isset( $sanitized[PostmanOptions::MAILJET_SECRET_KEY] ) ? $sanitized[PostmanOptions::MAILJET_SECRET_KEY] : '';
+                    $sanitized['basic_auth_password'] = isset( $sanitized['basic_auth_password'] ) ? $sanitized['basic_auth_password'] : '';
+                    $sanitized['ses_access_key_id'] = isset( $sanitized['ses_access_key_id'] ) ? $sanitized['ses_access_key_id'] : '';
+                    $sanitized['ses_secret_access_key'] = isset( $sanitized['ses_secret_access_key'] ) ? $sanitized['ses_secret_access_key'] : '';
+                    $sanitized['ses_region'] = isset( $sanitized['ses_region'] ) ? $sanitized['ses_region'] : '';
+                    $sanitized['enc_type'] = 'tls';
+                    $sanitized['auth_type'] = 'login';
+                    
+                    foreach( $sanitized as $key => $value ) {
+
+                        $options[$key] = $value;
+
+                    }
+
+                    if( $options == $_options ) {
+
+                        $response = true;
+
+                    } else {
+
+                        $response = update_option( PostmanOptions::POSTMAN_OPTIONS, $options );
+
+                    }
+                    
+                }
+            }else{
+             // New save logic for versions other than 1.0.1.
+                if( isset( $form_data['postman_options'] ) && !empty( $form_data['postman_options'] ) ) {
+                    $sanitized = post_smtp_sanitize_array( $form_data['postman_options'] );
+                    
+                    // Initialize the connections array.
+                    $mail_connections = array();
+                    $mail_connections = get_option( 'postman_connections', array() );
+
+                    // Get the transport type and corresponding API keys.
+                    $transport_type = $sanitized['transport_type'] ?? '';
+                    $api_keys = $this->get_transport_type_keys( $transport_type );
+
+                    $new_connection = array(
+                        'provider'     => $sanitized['transport_type'] ?? '',
+                        'sender_email' => $sanitized['sender_email'] ?? '',
+                        'sender_name'  => $sanitized['sender_name'] ?? '',
+                    );
+                    
+                    // Loop through the API keys and set the values from sanitized data.
+                    foreach ( $api_keys as $key ) {
+                        if ( isset( $sanitized[$key] ) ) {
+                            $new_connection[$key] = $sanitized[$key];
+                        }
+                    }
+                    
+                    $mail_connections[] = $new_connection;
+                    
+                    // Save the new mail connections to the 'postman_connections' option.
+                    $response =  update_option( 'postman_connections', $mail_connections );
 
                 }
-
-                if( $options == $_options ) {
-
-                    $response = true;
-
-                } else {
-
-                    $response = update_option( PostmanOptions::POSTMAN_OPTIONS, $options );
-
-                }
-                
             }
             
         }
 
-        //Prevent redirection
+        //Prevent redirection.
         delete_transient( PostmanSession::ACTION );
 
         wp_send_json( array(), 200 );
@@ -1697,6 +1736,69 @@ class Post_SMTP_New_Wizard {
 
         wp_redirect( $redirect_url );
 
+    }
+
+    /**
+     * Get transport type keys based on the provided transport type.
+     *
+     * This function returns an array of keys required for a specific
+     * transport type. Each transport type may require different API keys
+     * or configuration values.
+     *
+     * @param string $transport_type The transport type (e.g., 'smtp', 'mandrill').
+     * @return array The array of keys specific to the transport type.
+     * 
+     * @since 3.0.1
+     * @version 1.0.0
+     */
+    public function get_transport_type_keys( $transport_type ) {
+        // Define API key mappings for each transport type.
+        $api_keys_definitions = array(
+            'smtp'           => array(
+                'enc_type', 
+                'hostname', 
+                'port', 
+                'sender_email', 
+                'envelope_sender', 
+                'basic_auth_username', 
+                'basic_auth_password',
+            ),
+            'mandrill'       => array( 'mandrill_api_key' ),
+            'sendgrid_api'   => array( 'sendgrid_api_key' ),
+            'sendinblue_api' => array( 'sendinblue_api_key' ),
+            'mailjet_api'    => array( 
+                'mailjet_api_key', 
+                'mailjet_secret_key', 
+            ),
+            'sendpulse_api'  => array( 
+                'sendpulse_api_key', 
+                'sendpulse_secret_key', 
+            ),
+            'postmark_api'   => array( 'postmark_api_key' ),
+            'sparkpost_api'  => array( 'sparkpost_api_key' ),
+            'mailgun_api'    => array( 
+                'mailgun_api_key', 
+                'mailgun_domain_name', 
+            ),
+            'elasticemail_api' => array( 'elasticemail_api_key' ),
+            'smtp2go_api'    => array( 'smtp2go_api_key' ),
+            'gmail_api'      => array( 
+                'oauth_client_id', 
+                'oauth_client_secret', 
+                'basic_auth_username', 
+                'basic_auth_password', 
+            ),
+        );
+
+        /**
+         * Filter the API keys definitions array to allow modification.
+         *
+         * @param array $api_keys_definitions An associative array of transport types and their keys.
+         */
+        $api_keys_definitions = apply_filters( 'post_smtp_transport_type_keys', $api_keys_definitions );
+
+        // Return the keys for the specific transport type, or an empty array if not found.
+        return isset( $api_keys_definitions[ $transport_type ] ) ? $api_keys_definitions[ $transport_type ] : array();
     }
 
 }

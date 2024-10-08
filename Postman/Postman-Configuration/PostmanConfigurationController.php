@@ -241,6 +241,8 @@ class PostmanConfigurationController {
 
 		PostmanViewController::outputChildPageHeader( __( 'Settings', 'post-smtp' ), 'advanced_config' );
 
+		$mail_connections = get_option( 'postman_connections', array() );
+
 		$config_tabs = apply_filters( 'post_smtp_admin_tabs', array(
 		    'connections_config' => sprintf( '<span class="dashicons dashicons-networking"></span> %s', __( 'Connections', 'post-smtp' ) ),
 		    'fallback' => sprintf( '<span class="dashicons dashicons-backup"></span> %s', __( 'Fallback', 'post-smtp' ) ),
@@ -248,6 +250,7 @@ class PostmanConfigurationController {
 		    'logging_config' => sprintf( '<span class="dashicons dashicons-list-view"></span> %s', __( 'Logging', 'post-smtp' ) ),
 		    'advanced_options_config' => sprintf( '<span class="dashicons dashicons-admin-tools"></span> %s', __( 'Advanced', 'post-smtp' ) )
         ) );
+		$wizard_uri = admin_url( "admin.php?page=postman/configuration_wizard" );
 
 		print '<div id="config_tabs"><ul>';
 
@@ -326,6 +329,8 @@ class PostmanConfigurationController {
 
         <!-- Fallback Start -->
         <section id="fallback">
+		<a href="<?php echo esc_url( $wizard_uri ); ?>" class="button button-primary">Add Fallback</a>
+		<a href="<?php echo esc_url( $wizard_uri ); ?>" class="button button-primary" class="button button-secondary">Edit Fallback</a>
             <h2><?php esc_html_e( 'Failed emails fallback', 'post-smtp' ); ?></h2>
             <p><?php esc_html_e( 'By enable this option, if your email is fail to send Post SMTP will try to use the SMTP service you define here.', 'post-smtp' ); ?></p>
             <table class="form-table">
@@ -347,7 +352,23 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr>
+				<tr>
+                    <th scope="row"><?php esc_html_e( 'Fallback Connection', 'post-smtp' ); ?></th>
+                    <td>
+                        <select id="fallback-selected" name="postman_options[<?php esc_attr_e('selected_fallback'); ?>]">
+                            <?php
+                            foreach ( $mail_connections as $key => $label ) {
+							  $selected = selected( $this->options->getSelectedFallback(), $key,false );
+                            ?>
+                                <option value="<?php esc_attr_e( $key ); ?>"<?php esc_attr_e( $selected ); ?> class="<?php esc_attr_e( $label['provider'] ); ?>" ><?php echo esc_html( $label['title'] ); ?></option>
+                            <?php
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr style="display:none">
                     <th scope="row"><?php esc_html_e('Outgoing Mail Server', 'post-smtp' ); ?></th>
                     <?php $host = $this->options->getFallbackHostname(); ?>
                     <td>
@@ -356,7 +377,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr>
+                <tr  style="display:none">
                     <th scope="row"><?php esc_html_e('Mail Server Port', 'post-smtp' ); ?></th>
                     <?php $port = $this->options->getFallbackPort(); ?>
                     <td>
@@ -365,7 +386,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr>
+                <tr style="display:none">
                     <th scope="row"><?php esc_html_e( 'Security', 'post-smtp' ); ?></th>
                     <?php
                     $security_options = array(
@@ -388,7 +409,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr>
+                <tr  style="display:none">
                     <th scope="row"><?php esc_html_e( 'From Email', 'post-smtp' ); ?></th>
                     <td>
                         <input type="email" id="fallback-smtp-from-email"
@@ -400,7 +421,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr valign="">
+                <tr  style="display:none" valign="">
                     <th scope="row"><?php esc_html_e( 'Use SMTP Authentication?', 'post-smtp' ); ?></th>
                     <td>
                         <label>
@@ -417,7 +438,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr>
+                <tr  style="display:none">
                     <th scope="row"><?php esc_html_e('User name', 'post-smtp' ); ?></th>
                     <td>
                         <input type="text" id="fallback-smtp-username"
@@ -427,7 +448,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr>
+                <tr  style="display:none">
                     <th scope="row"><?php esc_html_e('Password', 'post-smtp' ); ?></th>
                     <td>
                         <input type="password" id="fallback-smtp-password"
