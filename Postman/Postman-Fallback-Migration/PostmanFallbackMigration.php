@@ -205,6 +205,8 @@ class PostmanFallbackMigration {
                 'envelope_sender'     =>  isset( $postman_options['fallback_from_email'] ) ? sanitize_text_field( $postman_options['fallback_from_email'] ) : '',
                 'basic_auth_username' => isset( $postman_options['fallback_smtp_username'] ) ? sanitize_text_field( $postman_options['fallback_smtp_username'] ) : '',
                 'basic_auth_password' => isset( $postman_options['fallback_smtp_password'] ) ? sanitize_text_field( $postman_options['fallback_smtp_password'] ) : '',
+                'provider'            => 'smtp',
+                'title'               => 'SMTP'
             );
 
             // Add fallback settings to index 1.
@@ -226,7 +228,7 @@ class PostmanFallbackMigration {
         }
 
          // Remove duplicates from the mail connections array.
-        $mail_connections = array_unique( $mail_connections, SORT_REGULAR );
+        //   $mail_connections = array_unique( $mail_connections, SORT_REGULAR );
         // Save the new mail connections to the 'postman_connections' option.
         update_option( 'postman_connections', $mail_connections );
 
@@ -334,7 +336,6 @@ class PostmanFallbackMigration {
         // Get the 'postman_connections' array and retrieve the primary connection.
         $mail_connections = get_option( 'postman_connections', array() );
         $primary_connection = isset( $mail_connections[0] ) ? $mail_connections[0] : array();
-
         // Define the keys related to email settings that need to be deleted.
         $email_keys = array(
             // SMTP settings.
@@ -410,7 +411,6 @@ class PostmanFallbackMigration {
 
         // Check if the transient exists.
         if ( false !== ( $deleted_email_settings = get_transient( 'deleted_email_settings' ) ) ) {
-
             // Update the postman_options in the database.
             update_option( 'postman_options', $deleted_email_settings );
 

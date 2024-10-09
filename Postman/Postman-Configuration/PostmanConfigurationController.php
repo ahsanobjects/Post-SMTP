@@ -242,6 +242,76 @@ class PostmanConfigurationController {
 		PostmanViewController::outputChildPageHeader( __( 'Settings', 'post-smtp' ), 'advanced_config' );
 
 		$mail_connections = get_option( 'postman_connections', array() );
+		$provider_fields = array(
+			'smtp' => array(
+				'provider' => 'smtp',
+				'title' => 'Transport Settings',
+				'description' => 'Configure the communication with the mail server.',
+                'enc_type', 
+                'hostname', 
+                'port',
+				'sender_name',
+                'sender_email', 
+                'envelope_sender', 
+                'basic_auth_username', 
+                'basic_auth_password',
+            ),
+            'mandrill' => array( 'provider' => 'mandrill', 'title' => 'Authentication', 'description' => 'Create an account at <a href="https://mandrillapp.com" target="_blank">Mandrillapp.com</a> and enter <a href="https://mandrillapp.com/settings" target="_blank">an API key</a> below.','mandrill_api_key', 'sender_name', 'sender_email'),
+            'sendgrid_api' => array( 'provider' => 'sendgrid_api', 'title' => 'Authentication', 'description' => 'Create an account at <a href="https://sendgrid.com" target="_blank">SendGrid.com</a> and enter <a href="https://app.sendgrid.com/settings/api_keys" target="_blank">an API key</a> below.','sendgrid_api_key', 'sender_name', 'sender_email' ),
+            'sendinblue_api' => array( 'provider' => 'sendinblue_api', 'title' => 'Authentication', 'description' => 'Create an account at <a href="https://www.brevo.com/" target="_blank">brevo.com (formely Sendinblue)</a> and enter <a href="https://account.brevo.com/advanced/api" target="_blank">an API key</a> below.','sendinblue_api_key', 'sender_name', 'sender_email' ),
+            'mailjet_api' => array(
+				'provider' => 'mailjet_api',
+				'title' => 'Authentication',
+				'description' => 'Create an account at <a href="https://app.mailjet.com" target="_blank">mailjet.com </a> and enter <a href="https://app.mailjet.com/account/apikeys" target="_blank">an API key and Secret Key</a> below.',
+                'mailjet_api_key', 
+                'mailjet_secret_key',
+				'sender_name',
+				'sender_email',
+            ),
+            'sendpulse_api' => array(
+				'provider' => 'sendpulse_api',
+				'title' => 'Authentication',
+				'description' => 'Create an account at <a href="https://sendpulse.com/" target="_blank">sendpulse.com</a> and enter <a href="https://login.sendpulse.com/settings/#api" target="_blank">an API key and Secret</a> below.',
+                'sendpulse_api_key', 
+                'sendpulse_secret_key',
+				'sender_name',
+				'sender_email',
+            ),
+            'postmark_api' => array( 'provider' => 'postmark_api', 'title' => 'Authentication', 'description' => 'Create an account at <a href="https://postmarkapp.com/" target="_blank">postmarkapp.com</a> and enter <a href="https://account.postmarkapp.com/sign_up" target="_blank">an API Token</a> below.', 'postmark_api_key', 'sender_name', 'sender_email' ),
+            'sparkpost_api' => array( 'provider' => 'sparkpost_api', 'title' => 'Authentication', 'description' => 'Create an account at <a href="https://app.sparkpost.com/join" target="_blank">SparkPost</a> and enter <a href="https://app.sparkpost.com/account/api-keys" target="_blank">an API Key</a> below.', 'sparkpost_api_key', 'sender_name', 'sender_email' ),
+            'mailgun_api' => array(
+				'provider' => 'mailgun_api',
+				'title' => 'Authentication',
+				'description' => 'Create an account at <a href="https://mailgun.com" target="_blank">mailgun.com</a> and enter <a href="https://app.mailgun.com/app/domains/" target="_blank">an API key</a> below.', 
+                'mailgun_api_key', 
+                'mailgun_domain_name',
+				'sender_name',
+				'sender_email',
+            ),
+            'elasticemail_api' => array( 'provider' => 'elasticemail_api', 'title' => 'Authentication', 'Create an account at <a href="https://www.elasticemail.com/" target="_blank">elasticemail.com</a> and enter <a href="https://app.elasticemail.com/marketing/settings/new/create-api" target="_blank">an API key</a> below.' => 'def', 'elasticemail_api_key', 'sender_name', 'sender_email' ),
+            'smtp2go_api' => array( 'provider' => 'smtp2go_api', 'title' => 'Authentication', 'description' => 'Create an account at <a href="https://www.smtp2go.com/" target="_blank">smtp2go.com</a> and enter <a href="https://app-us.smtp2go.com/sending/apikeys/" target="_blank">an API key</a> below.', 'smtp2go_api_key', 'sender_name', 'sender_email' ),
+            'gmail_api' => array(
+				'provider' => 'gmail_api',
+				'title' => 'Authentication',
+				'description' => '<b style="color:red">Attention!</b> Check this article how to configure Gmail/Gsuite OAuth:<a href="https://postmansmtp.com/how-to-configure-post-smtp-with-gmailgsuite-using-oauth/" target="_blank">Read Here</a>',
+                'oauth_client_id', 
+                'oauth_client_secret', 
+                'basic_auth_username', 
+                'basic_auth_password',
+            ),
+		);
+		$postman_db_version = get_option( 'postman_db_version' );
+
+		// Filter out only those connections where the provider matches the provider_fields.
+		if ( isset( $mail_connections ) && is_array( $mail_connections ) ) {
+			$filtered_mail_connections = array_filter( $mail_connections, function( $connection ) use ( $provider_fields ) {
+				return isset( $connection['provider']) && 
+					   !empty($connection['provider']) && 
+					   array_key_exists( $connection['provider'], $provider_fields );
+			});
+		} else {
+			$filtered_mail_connections = [];
+		}
 
 		$config_tabs = apply_filters( 'post_smtp_admin_tabs', array(
 		    'connections_config' => sprintf( '<span class="dashicons dashicons-networking"></span> %s', __( 'Connections', 'post-smtp' ) ),
@@ -324,14 +394,17 @@ class PostmanConfigurationController {
 		do_action( 'post_smtp_settings_sections' );
 
 		print '</section>';
-        // end account config
+        // end account config.
+
 		?>
 
         <!-- Fallback Start -->
         <section id="fallback">
+		<?php if( $postman_db_version == POST_SMTP_DB_VERSION ){ ?>
 		<a href="<?php echo esc_url( $wizard_uri ); ?>" class="button button-primary">Add Fallback</a>
 		<a href="<?php echo esc_url( $wizard_uri ); ?>" class="button button-primary" class="button button-secondary">Edit Fallback</a>
-            <h2><?php esc_html_e( 'Failed emails fallback', 'post-smtp' ); ?></h2>
+        <?php } ?>
+		    <h2><?php esc_html_e( 'Failed emails fallback', 'post-smtp' ); ?></h2>
             <p><?php esc_html_e( 'By enable this option, if your email is fail to send Post SMTP will try to use the SMTP service you define here.', 'post-smtp' ); ?></p>
             <table class="form-table">
                 <tr valign="">
@@ -352,23 +425,64 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
+		<?php if( $postman_db_version == POST_SMTP_DB_VERSION ){ ?>
 				<tr>
                     <th scope="row"><?php esc_html_e( 'Fallback Connection', 'post-smtp' ); ?></th>
                     <td>
+						<!-- Fallback connection dropdown -->
                         <select id="fallback-selected" name="postman_options[<?php esc_attr_e('selected_fallback'); ?>]">
                             <?php
-                            foreach ( $mail_connections as $key => $label ) {
-							  $selected = selected( $this->options->getSelectedFallback(), $key,false );
+                            foreach ( $filtered_mail_connections as $index  => $connection ) {
+							  $selected = selected( $this->options->getSelectedFallback(), $index, false );
                             ?>
-                                <option value="<?php esc_attr_e( $key ); ?>"<?php esc_attr_e( $selected ); ?> class="<?php esc_attr_e( $label['provider'] ); ?>" ><?php echo esc_html( $label['title'] ); ?></option>
+                            <option value="<?php esc_attr_e( $index ); ?>"<?php esc_attr_e( $selected ); ?> data-provider= "<?php esc_attr_e( $connection['provider'] ); ?>" >
+								<?php echo esc_html( ucfirst( str_replace('_', ' ', __( $connection['provider'], 'post-smtp' ) ) ) );  ?>
+							</option>
                             <?php
                             }
                             ?>
                         </select>
-                    </td>
-                </tr>
+					</td>
+				</tr>
+						
+				<?php
+				foreach ( $filtered_mail_connections as $index => $connection ) {
+					$provider = $connection['provider'];
+					$fields = isset( $provider_fields[ $provider ] ) ? $provider_fields[ $provider ] : array();
 
-                <tr style="display:none">
+					echo '<tbody id="provider-fields-' . esc_attr( $provider ) . '" class="provider-fields" style="display:none;">';
+
+					foreach ( $fields as $key => $field ) {
+						
+						if ( 'title' === $key ) {
+							$title = __( $field, 'post-smtp' );
+							echo '<tr class="provider-row">';
+							echo '<th colspan="2"><h2 style="margin:0px">' . esc_html( $title ?? '' ) . '</h2></th>';
+							echo '</tr>';
+						} elseif ( 'description' === $key ) {
+							$description = __( $field, 'post-smtp' );
+							echo '<tr class="provider-row">';
+							echo '<td colspan="2"><p>' . wp_kses_post( $field ?? '' ) . '</p></td>';
+							echo '</tr>';
+						} elseif('provider' === $key ){
+							$provider = __( $field, 'post-smtp' );
+							echo '<td><input type="hidden" name="postman_connections['. esc_attr( $index ) .'][' . esc_attr($key) . ']" value="' . esc_attr( $provider ?? '' ) . '"/></td>';
+						}elseif( 'sender_name' === $field || 'sender_email' === $field ){
+					    	echo '<input type="hidden" name="postman_connections['. esc_attr( $index ) .'][' . esc_attr($field) . ']" value="' . esc_attr( $connection[$field] ?? '' ) . '"/>';
+						}
+						else{
+							$label = __( ucfirst( str_replace( '_', ' ', $field ) ), 'post-smtp' );
+							echo '<tr class="provider-row">';
+							echo '<th scope="row">' . esc_html( $label ) . ':</th>';
+							echo '<td><input type="text" name="postman_connections['. esc_attr( $index ) .'][' . esc_attr($field) . ']" value="' . esc_attr( $connection[$field] ?? '' ) . '"/></td>';
+							echo '</tr>';
+						}
+					}
+					echo '</tbody>';
+				}
+				?>
+		<?php }else{  ?>
+                <tr>
                     <th scope="row"><?php esc_html_e('Outgoing Mail Server', 'post-smtp' ); ?></th>
                     <?php $host = $this->options->getFallbackHostname(); ?>
                     <td>
@@ -377,7 +491,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr  style="display:none">
+                <tr>
                     <th scope="row"><?php esc_html_e('Mail Server Port', 'post-smtp' ); ?></th>
                     <?php $port = $this->options->getFallbackPort(); ?>
                     <td>
@@ -386,7 +500,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr style="display:none">
+                <tr>
                     <th scope="row"><?php esc_html_e( 'Security', 'post-smtp' ); ?></th>
                     <?php
                     $security_options = array(
@@ -409,7 +523,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr  style="display:none">
+                <tr>
                     <th scope="row"><?php esc_html_e( 'From Email', 'post-smtp' ); ?></th>
                     <td>
                         <input type="email" id="fallback-smtp-from-email"
@@ -421,7 +535,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr  style="display:none" valign="">
+                <tr valign="">
                     <th scope="row"><?php esc_html_e( 'Use SMTP Authentication?', 'post-smtp' ); ?></th>
                     <td>
                         <label>
@@ -438,7 +552,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr  style="display:none">
+                <tr>
                     <th scope="row"><?php esc_html_e('User name', 'post-smtp' ); ?></th>
                     <td>
                         <input type="text" id="fallback-smtp-username"
@@ -448,7 +562,7 @@ class PostmanConfigurationController {
                     </td>
                 </tr>
 
-                <tr  style="display:none">
+                <tr>
                     <th scope="row"><?php esc_html_e('Password', 'post-smtp' ); ?></th>
                     <td>
                         <input type="password" id="fallback-smtp-password"
@@ -457,7 +571,7 @@ class PostmanConfigurationController {
                         >
                     </td>
                 </tr>
-
+		<?php } ?>
             </table>
         </section>
         <!-- Fallback End -->

@@ -1671,10 +1671,13 @@ class Post_SMTP_New_Wizard {
              // New save logic for versions other than 1.0.1.
                 if( isset( $form_data['postman_options'] ) && !empty( $form_data['postman_options'] ) ) {
                     $sanitized = post_smtp_sanitize_array( $form_data['postman_options'] );
-                    
                     // Initialize the connections array.
-                    $mail_connections = array();
-                    $mail_connections = get_option( 'postman_connections', array() );
+                    $mail_connections = get_option( 'postman_connections' );
+
+                    // Ensure $mail_connections is an array
+                    if ( !is_array( $mail_connections ) ) {
+                        $mail_connections = array();
+                    }
 
                     // Get the transport type and corresponding API keys.
                     $transport_type = $sanitized['transport_type'] ?? '';
@@ -1685,16 +1688,14 @@ class Post_SMTP_New_Wizard {
                         'sender_email' => $sanitized['sender_email'] ?? '',
                         'sender_name'  => $sanitized['sender_name'] ?? '',
                     );
-                    
+
                     // Loop through the API keys and set the values from sanitized data.
                     foreach ( $api_keys as $key ) {
                         if ( isset( $sanitized[$key] ) ) {
                             $new_connection[$key] = $sanitized[$key];
                         }
-                    }
-                    
-                    $mail_connections[] = $new_connection;
-                    
+                    } 
+                    $mail_connections[] = $new_connection; 
                     // Save the new mail connections to the 'postman_connections' option.
                     $response =  update_option( 'postman_connections', $mail_connections );
 
